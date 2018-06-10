@@ -52,8 +52,7 @@ plotModelFit=ggplot()+geom_jitter(aes(x=pilot$moodChg,y=model5$fitted.values))+l
 
 # Exploratory: let's see if any variables affect power sensitivity.
 pilot=cbind(pilot,moodAdj=pilot$moodChg-model5$coefficients[2]*pilot$moodChg-intercept)
-pilot=cbind(pilot,sensitivity=numeric(length=length(pilot$run)))
-pilot$sensitivity[power!=0]= pilot$moodAdj[power!=0]*pilot$power[power!=0] 
+pilot=cbind(pilot,sensitivity=pilot$moodAdj*pilot$power)
 # It's basically just a measure of mood change because of the tiny model effects, but this correction is better than nothing.
 print("Do any demographic variables affect mood change?")
 print(summary(lm(moodChg~age+eduScore+genScore+incEstimate,pilot))) # Nope, none.
