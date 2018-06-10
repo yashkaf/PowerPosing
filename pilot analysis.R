@@ -35,13 +35,23 @@ model4=lm(moodChg~power+moodPre+time,pilot)
 print("Model with time spent")
 print(summary(model4)) # Nope.
 
-# Does model 2 do a good job?
+# Hmm, the interecept is quite different from the no-posing mood change.
+print("Mean mood change for no posing and meutral position")
+intercept=mean(pilot$moodChg[pilot$posture %in% c("noPosing","neutralArmsAtSides")])
+print(intercept)
+# Force the intercept to the mood change for neutral and no posing.
+model5=lm(moodChg-intercept~power+moodPre+0,pilot)
+print("Model with forced intercept")
+print(summary(model5))
+# Ouch, R-squared is 0.07. The effect of power is small, barely over a quarter of the SD of mood change.
+
+# Does model 5 do a good job?
 library(ggplot2)
-plotModelFit=ggplot()+geom_jitter(aes(x=pilot$moodChg,y=model2$fitted.values))+labs(x="Observed mood change",y="Predicted mood change") 
+plotModelFit=ggplot()+geom_jitter(aes(x=pilot$moodChg,y=model5$fitted.values))+labs(x="Observed mood change",y="Predicted mood change") 
 # We can see how weak the relationship is at R-squared = 0.09. At least it looks unbiased.
 
 # Exploratory: let's see if any variables affect power sensitivity.
-pilot=cbind(pilot,moodAdj=pilot$moodChg-model2$coefficients[3]*pilot$moodChg)
+pilot=cbind(pilot,moodAdj=pilot$moodChg-model5$coefficients[2]*pilot$moodChg-intercept)
 pilot=cbind(pilot,sensitivity=numeric(length=length(pilot$run)))
 pilot$sensitivity[power!=0]= pilot$moodAdj[power!=0]*pilot$power[power!=0] 
 # It's basically just a measure of mood change because of the tiny model effects, but this correction is better than nothing.
@@ -49,3 +59,7 @@ print("Do any demographic variables affect mood change?")
 print(summary(lm(moodChg~age+eduScore+genScore+incEstimate,pilot))) # Nope, none.
 print("Do any demographic variables affect sensitivity to power?")
 print(summary(lm(sensitivity~age+eduScore+genScore+incEstimate,pilot))) # Perhaps it drops a bit with age.
+
+# Finally, let's see how powerful each pose is.
+print(sapply(levels(pilot$posture), function(x) {mean(pilot$sensitivity[pilot$posture==x])}))
+# Strong man and crumpled are equally impactful, arms straight up and akimbo are also decent.
