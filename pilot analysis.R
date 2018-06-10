@@ -60,6 +60,10 @@ print(summary(lm(moodChg~age+eduScore+genScore+incEstimate,pilot))) # Nope, none
 print("Do any demographic variables affect sensitivity to power?")
 print(summary(lm(sensitivity~age+eduScore+genScore+incEstimate,pilot))) # Perhaps it drops a bit with age.
 
+# What's the chance that power posing actually improves your mood?
+print(sum(pilot$moodAdj[pilot$power==1]>mean(pilot$moodAdj))/length(pilot$power[pilot$power==1]))
+# Ouch, below 50%!
+
 # Finally, let's see how powerful each pose is.
 print(sapply(levels(pilot$posture), function(x) {mean(pilot$sensitivity[pilot$posture==x])}))
 # Strong man and crumpled are equally impactful, arms straight up and akimbo are also decent.
